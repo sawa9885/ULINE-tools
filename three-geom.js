@@ -6,6 +6,9 @@ import {
   PLATE_THICKNESS_MM,
   TEXT_EMBED_MM,
 } from "./layout.js";
+import { repairGeometry } from "./repair-geometry.js";
+
+const TEMP_GEOMETRY_SCALE = 5.0;
 
 export function buildRoundedRectPlate({
   width = 76.5,
@@ -33,9 +36,15 @@ export function buildRoundedRectPlate({
     curveSegments: 12,
   });
 
-  geometry.computeBoundingBox();
-  geometry.computeVertexNormals();
-  return geometry; // keep indexed, no welding
+  if (Math.abs(TEMP_GEOMETRY_SCALE - 1) > 1e-5) {
+    geometry.scale(
+      TEMP_GEOMETRY_SCALE,
+      TEMP_GEOMETRY_SCALE,
+      TEMP_GEOMETRY_SCALE
+    );
+  }
+
+  return repairGeometry(geometry); // ensure welded face normals
 }
 
 function normalizeLineHeight(geometry, targetHeight) {
@@ -67,7 +76,15 @@ function createLineGeometry(text, { font, fontSize, depth, baselineY }) {
   const zOffset = PLATE_THICKNESS_MM - TEXT_EMBED_MM;
   geometry.translate(xOffset, baselineY + yOffset, zOffset);
 
-  // Keep indexed; do not toNonIndexed or mergeVertices (avoids non-manifold edges)
+  if (Math.abs(TEMP_GEOMETRY_SCALE - 1) > 1e-5) {
+    geometry.scale(
+      TEMP_GEOMETRY_SCALE,
+      TEMP_GEOMETRY_SCALE,
+      TEMP_GEOMETRY_SCALE
+    );
+  }
+
+  // Keep indexed until repairGeometry welds seams after merging
   geometry.computeVertexNormals();
   return geometry;
 }
@@ -102,7 +119,5 @@ export function buildTextGeometry({
 
   const merged = mergeGeometries(geometries, false); // keep indexed
   geometries.forEach((geo) => geo.dispose());
-  merged.computeVertexNormals();
-  merged.computeBoundingBox();
-  return merged;
+  return repairGeometry(merged);
 }
