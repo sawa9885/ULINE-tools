@@ -1,16 +1,41 @@
-import * as THREE from "./vendor/three/build/three.module.js";
 import { TextGeometry } from "./vendor/three/examples/jsm/geometries/TextGeometry.js";
 
-export const PLATE_WIDTH_MM = 76.5;
-export const PLATE_HEIGHT_MM = 22.0;
-export const PLATE_THICKNESS_MM = 1.0;
-export const TEXT_DEPTH_MM = 1.0;
-export const TEXT_EMBED_MM = 0.2;
-export const HORIZONTAL_PADDING_MM = 2.0;
-export const VERTICAL_PADDING_MM = 5.0;
-export const USABLE_WIDTH_MM = PLATE_WIDTH_MM - HORIZONTAL_PADDING_MM * 2;
-export const USABLE_HEIGHT_MM = PLATE_HEIGHT_MM - VERTICAL_PADDING_MM * 2;
-export const LINE_SPACING_MM = 2.0;
+export const layoutDefaults = {
+  plateWidthMm: 76.5,
+  plateHeightMm: 22.0,
+  plateThicknessMm: 1.0,
+  textDepthMm: 1.0,
+  textEmbedMm: 0.0,
+  horizontalPaddingMm: 2.0,
+  verticalPaddingMm: 5.0,
+  lineSpacingMm: 2.0,
+};
+
+export const layoutState = { ...layoutDefaults };
+
+export function setLayoutValue(key, value) {
+  if (!(key in layoutState)) {
+    throw new Error(`Unknown layout key: ${key}`);
+  }
+  layoutState[key] = value;
+}
+
+export function resetLayoutState() {
+  Object.assign(layoutState, layoutDefaults);
+  measureCache.clear();
+}
+
+export function getUsableWidth() {
+  return (
+    layoutState.plateWidthMm - layoutState.horizontalPaddingMm * 2
+  );
+}
+
+export function getUsableHeight() {
+  return (
+    layoutState.plateHeightMm - layoutState.verticalPaddingMm * 2
+  );
+}
 
 export const DEFAULT_FONT_SIZE_TIERS = {
   1: 9.0,
@@ -49,19 +74,13 @@ function measureLineWidth(text, font, fontSize) {
   return width;
 }
 
-/**
- * Compute layout for the provided explicit lines.
- * @param {object} params
- * @param {string[]} params.lines
- * @param {THREE.Font} params.font
- */
 export function computeLayout({ lines, font, fontSizes = DEFAULT_FONT_SIZE_TIERS }) {
   if (!font) {
     return {
       fits: false,
       lines: [],
       widths: [],
-      fontSize: DEFAULT_FONT_SIZE_TIERS[1],
+      fontSize: fontSizes[1],
       lineCount: 0,
       overflowIndex: null,
     };
@@ -74,7 +93,7 @@ export function computeLayout({ lines, font, fontSizes = DEFAULT_FONT_SIZE_TIERS
       fits: false,
       lines: [],
       widths: [],
-      fontSize: DEFAULT_FONT_SIZE_TIERS[1],
+      fontSize: fontSizes[1],
       lineCount: 0,
       overflowIndex: null,
       baselineOffsets: [],
@@ -84,10 +103,11 @@ export function computeLayout({ lines, font, fontSizes = DEFAULT_FONT_SIZE_TIERS
   const tier = Math.min(lineCount, 3);
   const fontSize =
     fontSizes[tier] ??
-    DEFAULT_FONT_SIZE_TIERS[tier] ??
-    DEFAULT_FONT_SIZE_TIERS[3];
+    fontSizes[Math.min(3, tier)] ??
+    fontSizes[1];
   const widths = sanitized.map((line) => measureLineWidth(line, font, fontSize));
-  const overflowIndex = widths.findIndex((width) => width > USABLE_WIDTH_MM);
+  const usableWidth = getUsableWidth();
+  const overflowIndex = widths.findIndex((width) => width > usableWidth);
   const fits = overflowIndex === -1;
 
   return {

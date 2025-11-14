@@ -85,6 +85,50 @@
       cursor: not-allowed;
     }
 
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    #advanced-panel {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      background: #f5f5f7;
+      margin-bottom: 1rem;
+    }
+
+    #advanced-panel summary {
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    #advanced-panel[open] summary {
+      margin-bottom: 1rem;
+    }
+
+    .advanced-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .advanced-grid label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.85rem;
+      color: #3c3c43;
+      gap: 0.25rem;
+    }
+
+    .advanced-grid input[type="number"] {
+      width: 100%;
+    }
+
     .status {
       min-height: 2.4em;
       font-size: 0.95rem;
@@ -100,6 +144,16 @@
       border-color: #d13438;
       background: #fde7e9;
       color: #a4262c;
+    }
+
+    .download-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .download-actions button {
+      flex: 1;
     }
 
     .main {
@@ -144,21 +198,51 @@
         <input type="text" class="line-input" data-line="2" placeholder="Line 3 (Bottom when three lines)">
       </div>
     </div>
-    <div>
-      <label for="plate-color">Plate Color</label>
-      <select id="plate-color">
-        <option value="0">Black</option>
-        <option value="1">White</option>
-      </select>
+    <details id="advanced-panel">
+      <summary>Advanced Options</summary>
+      <label class="checkbox-row">
+        <input type="checkbox" id="caps-toggle" checked>
+        <span>Force UPPERCASE</span>
+      </label>
+      <div class="advanced-grid">
+        <label>
+          Plate Width (mm)
+          <input type="number" id="plate-width" min="10" step="0.1" value="76.5">
+        </label>
+        <label>
+          Plate Height (mm)
+          <input type="number" id="plate-height" min="5" step="0.1" value="22">
+        </label>
+        <label>
+          Plate Thickness (mm)
+          <input type="number" id="plate-thickness" min="0.2" step="0.1" value="1">
+        </label>
+        <label>
+          Text Depth (mm)
+          <input type="number" id="text-depth" min="0.1" step="0.1" value="1">
+        </label>
+        <label>
+          Text Embed (mm)
+          <input type="number" id="text-embed" min="0" step="0.05" value="0">
+        </label>
+        <label>
+          Horizontal Padding (mm)
+          <input type="number" id="horizontal-padding" min="0" step="0.1" value="2">
+        </label>
+        <label>
+          Vertical Padding (mm)
+          <input type="number" id="vertical-padding" min="0" step="0.1" value="5">
+        </label>
+        <label>
+          Line Spacing (mm)
+          <input type="number" id="line-spacing" min="0" step="0.1" value="2">
+        </label>
+      </div>
+    </details>
+    <div class="download-actions">
+      <button id="download-plate-btn" disabled>Download Plate STL</button>
+      <button id="download-text-btn" disabled>Download Text STL</button>
     </div>
-    <div>
-      <label for="text-color">Text Color</label>
-      <select id="text-color">
-        <option value="0">Black</option>
-        <option value="1">White</option>
-      </select>
-    </div>
-    <button id="download-btn" disabled>Download OBJ</button>
     <div id="status" class="status">Waiting for input.</div>
   </aside>
   <main class="main">
