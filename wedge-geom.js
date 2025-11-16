@@ -50,6 +50,11 @@ export function buildWedgeSolid({
     bevelEnabled: false,
   });
   geometry.center();
+  geometry.rotateX(Math.PI / 2);
+  geometry.rotateZ(Math.PI / 2);
+  geometry.computeBoundingBox();
+  const minZ = geometry.boundingBox?.min.z ?? 0;
+  geometry.translate(0, 0, -minZ);
   geometry.computeBoundingBox();
   geometry.computeVertexNormals();
   return repairGeometry(geometry);

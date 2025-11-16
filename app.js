@@ -36,7 +36,7 @@ let preview;
 
 function sanitizeLine(value) {
   if (!value) return "";
-  const collapsed = value.replace(/\s+/g, " ").trim();
+  const collapsed = value.replace(/\s+/g, " ");
   return state.forceCaps ? collapsed.toUpperCase() : collapsed;
 }
 
